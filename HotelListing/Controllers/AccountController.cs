@@ -50,7 +50,7 @@ namespace HotelListing.Controllers
                     result.Errors.ToList().ForEach(e => ModelState.AddModelError(e.Code, e.Description));
                     return BadRequest(ModelState);
                 }
-                
+                _userManager.AddToRolesAsync(user, userDTO.Roles).Wait();
                 return Accepted();
             }
             catch (Exception ex)
