@@ -24,7 +24,7 @@ namespace HotelListing.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        public ActionResult<IEnumerable<WeatherForecast>> Get()
         {
             _logger.LogInformation("Accessed Weather Forecast");
             var rng = new Random();
