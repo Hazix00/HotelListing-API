@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Identity;
+using HotelListingAPI.HotelListing.Services;
 
 namespace HotelListing
 {
@@ -27,30 +28,32 @@ namespace HotelListing
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            // Configure Entity Framework for SQL Server
             services.AddDbContext<DatabaseContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("sqlConnection"))
             );
-
+            // Configure Authentication Services
             services.AddAuthentication();
             services.ConfigureIdentity();
-            
+            services.ConfigureJWT(Configuration);
+            // Configure CORS
             services.AddCors(o => {
                 o.AddPolicy("AllowAll", builder =>
                     builder.AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader());
             });
-
+            // Configure AutoMapper
             services.AddAutoMapper(typeof(MapperInitilizer));
-
+            // Configure Dependency Injection
             services.AddTransient<IUnitOfWork, UnitOfWork>();
-
+            services.AddScoped<IAuthManager, AuthManager>();
+            // Configure Swagger
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HotelListing", Version = "v1" });
             });
-
+            // Configure API Controllers
             services.AddControllers().AddNewtonsoftJson(op => 
                 op.SerializerSettings.ReferenceLoopHandling = 
                     Newtonsoft.Json.ReferenceLoopHandling.Ignore);
