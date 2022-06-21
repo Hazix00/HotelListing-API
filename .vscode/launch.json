@@ -8,7 +8,7 @@
             "name": ".NET Core Launch (web)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "watch",
+            "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/HotelListing/bin/Debug/net6/HotelListing.dll",
             "args": [],
@@ -27,9 +27,16 @@
             }
         },
         {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach"
-        }
+            "type": "dotnetwatchattach",
+            "request": "launch",
+            "name": ".NET Watch Attach",
+            "args": { // Args to pass to coreclr attach
+              "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+              }
+            },
+            "task": "watch", // Label of watch task in tasks.json
+            "program": "${workspaceFolder}/HotelListing/bin/Debug/net6/HotelListing.dll"
+          }
     ]
 }

@@ -34,7 +34,9 @@
                 "run",
                 "debug",
                 "--project",
-                "${workspaceFolder}/HotelListing/HotelListing.csproj"
+                "${workspaceFolder}/HotelListing/HotelListing.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
         }

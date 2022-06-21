@@ -37,7 +37,8 @@ namespace HotelListing
             services.ConfigureIdentity();
             services.ConfigureJWT(Configuration);
             // Configure CORS
-            services.AddCors(o => {
+            services.AddCors(o =>
+            {
                 o.AddPolicy("AllowAll", builder =>
                     builder.AllowAnyOrigin()
                     .AllowAnyMethod()
@@ -52,10 +53,33 @@ namespace HotelListing
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HotelListing", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "Bearer"
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type=ReferenceType.SecurityScheme,
+                                Id="Bearer"
+                            }
+                        },
+                        new string[]{}
+                    }
+                });
             });
             // Configure API Controllers
-            services.AddControllers().AddNewtonsoftJson(op => 
-                op.SerializerSettings.ReferenceLoopHandling = 
+            services.AddControllers().AddNewtonsoftJson(op =>
+                op.SerializerSettings.ReferenceLoopHandling =
                     Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
         }
@@ -68,7 +92,14 @@ namespace HotelListing
                 app.UseDeveloperExceptionPage();
             }
 
+            app.Use(async (context, next) =>
+            {
+                Console.WriteLine($"{context.Request.Method}:{context.Request.Path}");
+                await next();
+            });
+
             app.UseSwagger();
+
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "HotelListing v1"));
 
             app.UseHttpsRedirection();
@@ -77,20 +108,16 @@ namespace HotelListing
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseAuthentication();
 
-            app.Use(async (context, next) =>
-            {
-                Console.WriteLine($"{context.Request.Method}:{context.Request.Path}");
-                await next();
-            });
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
 
-            
+
         }
     }
 }

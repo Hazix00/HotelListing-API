@@ -63,6 +63,7 @@ namespace HotelListingAPI.HotelListing.Services
         {
             var tokenOptions = new JwtSecurityToken(
                 issuer: _configuration.GetValue<string>("JWT:Issuer"),
+                audience: _configuration.GetValue<string>("JWT:Audience"),
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(_configuration.GetValue<int>("JWT:ExpirationMinutes")),
                 signingCredentials: signInCredentials

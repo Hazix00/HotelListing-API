@@ -39,6 +39,7 @@ namespace HotelListing
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = configuration.GetValue<string>("JWT:Issuer"),
+                    ValidAudience = configuration.GetValue<string>("JWT:Audience"),
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
                 };
             });

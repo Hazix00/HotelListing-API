@@ -81,7 +81,8 @@ namespace HotelListing.Controllers
                     return Unauthorized();
                 }
                 var token = await _authManager.CreateToken();
-                return Accepted(token);
+
+                return Accepted(new { token });
             }
             catch (Exception ex)
             {
