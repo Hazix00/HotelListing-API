@@ -92,5 +92,46 @@ namespace HotelListing.Controllers
                 return StatusCode(500, "Internal Server Error. Please Try Again Later.");
             }
         }
+
+        [Authorize]
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<CountryDTO>> UpdateCountry(int id, [FromBody] UpdateCountryDTO updateCountryDTO)
+        {
+            if(!ModelState.IsValid || id < 1) {
+                _logger.LogError($"Invalid PUT Attemt in {nameof(UpdateCountry)}");
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var country = await _unitOfWork.Countries.Get(c => c.Id == id);
+                if(country == null) 
+                {
+                    return NotFound();
+                }
+                
+                foreach(var propertyInfo in typeof(Country).GetProperties())
+                {
+                    var sourceProperty = typeof(UpdateCountryDTO).GetProperty(propertyInfo.Name);
+                    if( sourceProperty != null )
+                    {
+                        propertyInfo.SetValue(country, sourceProperty.GetValue(updateCountryDTO));
+                    }
+                }
+                _unitOfWork.Countries.Update(country);
+
+                await _unitOfWork.Save();
+                
+                return this.NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Something Went Wrong in the {nameof(UpdateCountry)}");
+                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
+            }
+        }
     }
 }

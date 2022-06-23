@@ -75,7 +75,8 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<HotelDTO>> CreateHotel([FromBody] CreateHotelDTO createHotelDTO)
         {
-            if(!ModelState.IsValid) {
+            if (!ModelState.IsValid)
+            {
                 _logger.LogError($"Invalid POST Attemt in {nameof(CreateHotel)}");
                 return BadRequest(ModelState);
             }
@@ -90,6 +91,48 @@ namespace HotelListing.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Something Went Wrong in the {nameof(CreateHotel)}");
+                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
+            }
+        }
+
+        [Authorize]
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<CountryDTO>> UpdateHotel(int id, [FromBody] UpdateHotelDTO updateHotelDTO)
+        {
+            if (!ModelState.IsValid || id < 1)
+            {
+                _logger.LogError($"Invalid PUT Attemt in {nameof(UpdateHotel)}");
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var hotel = await _unitOfWork.Hotels.Get(c => c.Id == id);
+                if (hotel == null)
+                {
+                    return NotFound();
+                }
+
+                foreach (var propertyInfo in typeof(Hotel).GetProperties())
+                {
+                    var sourceProperty = typeof(UpdateHotelDTO).GetProperty(propertyInfo.Name);
+                    if (sourceProperty != null)
+                    {
+                        propertyInfo.SetValue(hotel, sourceProperty.GetValue(updateHotelDTO));
+                    }
+                }
+                _unitOfWork.Hotels.Update(hotel);
+
+                await _unitOfWork.Save();
+
+                return this.NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Something Went Wrong in the {nameof(UpdateHotel)}");
                 return StatusCode(500, "Internal Server Error. Please Try Again Later.");
             }
         }
