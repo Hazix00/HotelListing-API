@@ -100,7 +100,7 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<CountryDTO>> UpdateCountry(int id, [FromBody] UpdateCountryDTO updateCountryDTO)
+        public async Task<ActionResult> UpdateCountry(int id, [FromBody] UpdateCountryDTO updateCountryDTO)
         {
             if (!ModelState.IsValid || id < 1)
             {
@@ -124,11 +124,44 @@ namespace HotelListing.Controllers
 
                 await _unitOfWork.Save();
 
-                return this.NoContent();
+                return NoContent();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Something Went Wrong in the {nameof(UpdateCountry)}");
+                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
+            }
+        }
+        [Authorize]
+        [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<CountryDTO>> DeleteCountry(int id)
+        {
+            if (!ModelState.IsValid || id < 1)
+            {
+                _logger.LogError($"Invalid DELETE Attemt in {nameof(DeleteCountry)}");
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var country = await _unitOfWork.Countries.Get(c => c.Id == id);
+                if (country == null)
+                {
+                    return NotFound();
+                }
+                
+                await _unitOfWork.Countries.Delete(id);
+
+                await _unitOfWork.Save();
+
+                return Ok(country);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Something Went Wrong in the {nameof(DeleteCountry)}");
                 return StatusCode(500, "Internal Server Error. Please Try Again Later.");
             }
         }
