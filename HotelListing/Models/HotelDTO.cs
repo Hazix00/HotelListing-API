@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Numerics;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -20,7 +21,8 @@ namespace HotelListing.Models
         [Range(1,5)]
         public double Rating { get; set; }
 
-        [Required]
+        // [Required]
+        [Range(1, long.MaxValue)]
         public int CountryId { get; set; }
     }
 

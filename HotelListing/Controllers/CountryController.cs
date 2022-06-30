@@ -21,7 +21,7 @@ namespace HotelListing.Controllers
         private readonly ILogger<CountryController> _logger;
         private readonly IMapper _mapper;
 
-        public CountryController(IUnitOfWork unitOfWork, ILogger<CountryController> logger, 
+        public CountryController(IUnitOfWork unitOfWork, ILogger<CountryController> logger,
             IMapper mapper)
         {
             _unitOfWork = unitOfWork;
@@ -37,7 +37,7 @@ namespace HotelListing.Controllers
         {
             try
             {
-                var countries = await _unitOfWork.Countries.GetAll();
+                var countries = await _unitOfWork.Countries.GetAll(null,null, new List<string> { "Hotels" });
                 var results = _mapper.Map<IList<CountryDTO>>(countries);
                 return Ok(results);
             }
@@ -74,7 +74,8 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CountryDTO>> CreateCountry([FromBody] CreateCountryDTO createCountryDTO)
         {
-            if(!ModelState.IsValid) {
+            if (!ModelState.IsValid)
+            {
                 _logger.LogError($"Invalid POST Attemt in {nameof(CreateCountry)}");
                 return BadRequest(ModelState);
             }
@@ -101,30 +102,28 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CountryDTO>> UpdateCountry(int id, [FromBody] UpdateCountryDTO updateCountryDTO)
         {
-            if(!ModelState.IsValid || id < 1) {
+            if (!ModelState.IsValid || id < 1)
+            {
                 _logger.LogError($"Invalid PUT Attemt in {nameof(UpdateCountry)}");
                 return BadRequest(ModelState);
             }
             try
             {
                 var country = await _unitOfWork.Countries.Get(c => c.Id == id);
-                if(country == null) 
+                if (country == null)
                 {
                     return NotFound();
                 }
-                
-                foreach(var propertyInfo in typeof(Country).GetProperties())
-                {
-                    var sourceProperty = typeof(UpdateCountryDTO).GetProperty(propertyInfo.Name);
-                    if( sourceProperty != null )
-                    {
-                        propertyInfo.SetValue(country, sourceProperty.GetValue(updateCountryDTO));
-                    }
-                }
+                country.Hotels = new List<Hotel>();
+                _mapper.Map(updateCountryDTO, country);
+                _mapper.Map(updateCountryDTO.Hotels, country.Hotels);
+                // updateCountryDTO.Hotels.ToList().ForEach(hotel => {
+                //     country.Hotels.Add(_mapper.Map<Hotel>(hotel));
+                // });
                 _unitOfWork.Countries.Update(country);
 
                 await _unitOfWork.Save();
-                
+
                 return this.NoContent();
             }
             catch (Exception ex)

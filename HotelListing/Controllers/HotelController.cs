@@ -116,14 +116,7 @@ namespace HotelListing.Controllers
                     return NotFound();
                 }
 
-                foreach (var propertyInfo in typeof(Hotel).GetProperties())
-                {
-                    var sourceProperty = typeof(UpdateHotelDTO).GetProperty(propertyInfo.Name);
-                    if (sourceProperty != null)
-                    {
-                        propertyInfo.SetValue(hotel, sourceProperty.GetValue(updateHotelDTO));
-                    }
-                }
+                _mapper.Map(updateHotelDTO, hotel);
                 _unitOfWork.Hotels.Update(hotel);
 
                 await _unitOfWork.Save();
