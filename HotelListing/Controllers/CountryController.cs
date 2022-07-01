@@ -2,6 +2,7 @@
 using HotelListing.Data;
 using HotelListing.IRepository;
 using HotelListing.Models;
+using HotelListingAPI.HotelListing.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace HotelListing.Controllers
 {
@@ -29,17 +31,36 @@ namespace HotelListing.Controllers
             _mapper = mapper;
         }
 
+        // [Authorize]
+        // [HttpGet]
+        // [ProducesResponseType(StatusCodes.Status200OK)]
+        // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        // public async Task<ActionResult<IList<CountryDTO>>> GetCountries()
+        // {
+        //     try
+        //     {
+        //         var countries = await _unitOfWork.Countries.GetAll(null,null, new List<string> { "Hotels" });
+        //         var results = _mapper.Map<IList<CountryDTO>>(countries);
+        //         return Ok(results);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         _logger.LogError(ex, $"Something Went Wrong in the {nameof(GetCountries)}");
+        //         return StatusCode(500, "Internal Server Error. Please Try Again Later.");
+        //     }
+        // }
+
         [Authorize]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IList<CountryDTO>>> GetCountries()
+        public async Task<ActionResult<IPagedList<Country>>> GetCountries([FromQuery] RequestParams requestParams)
         {
             try
             {
-                var countries = await _unitOfWork.Countries.GetAll(null,null, new List<string> { "Hotels" });
-                var results = _mapper.Map<IList<CountryDTO>>(countries);
-                return Ok(results);
+                var countries = await _unitOfWork.Countries.GetAll(requestParams);
+
+                return Ok(countries);
             }
             catch (Exception ex)
             {

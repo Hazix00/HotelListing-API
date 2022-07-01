@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using X.PagedList;
+using HotelListingAPI.HotelListing.Models;
 
 namespace HotelListing.Controllers
 {
@@ -30,17 +32,36 @@ namespace HotelListing.Controllers
             _mapper = mapper;
         }
 
+        // [Authorize]
+        // [HttpGet]
+        // [ProducesResponseType(StatusCodes.Status200OK)]
+        // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        // public async Task<ActionResult<IList<HotelDTO>>> GetHotels()
+        // {
+        //     try
+        //     {
+        //         var hotels = await _unitOfWork.Hotels.GetAll();
+        //         var results = _mapper.Map<IList<HotelDTO>>(hotels);
+        //         return Ok(results);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         _logger.LogError(ex, $"Something Went Wrong in the {nameof(GetHotels)}");
+        //         return StatusCode(500, "Internal Server Error. Please Try Again Later.");
+        //     }
+        // }
+
         [Authorize]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IList<HotelDTO>>> GetHotels()
+        public async Task<ActionResult<IPagedList<Hotel>>> GetHotels([FromQuery] RequestParams requestParams)
         {
             try
             {
-                var hotels = await _unitOfWork.Hotels.GetAll();
-                var results = _mapper.Map<IList<HotelDTO>>(hotels);
-                return Ok(results);
+                var hotels = await _unitOfWork.Hotels.GetAll(requestParams);
+
+                return Ok(hotels);
             }
             catch (Exception ex)
             {
